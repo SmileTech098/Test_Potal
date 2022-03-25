@@ -55,6 +55,15 @@ function QuestionPage() {
 
   const Submit = () => {
     console.log("submitted...");
+    const obj = [
+      {
+        Total: WrOption + CROption,
+        Wrong: WrOption,
+        Correct: CROption,
+      },
+    ];
+    localStorage.setItem("Right", JSON.stringify(obj));
+
     console.log("correct  " + CROption);
     console.log("wrong  " + WrOption);
   };

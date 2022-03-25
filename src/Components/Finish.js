@@ -1,6 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
+
+const Obj = JSON.parse(localStorage.getItem("obj")) || [];
 
 function Finish() {
+  //   const [correct, setcorrect] = useState(Obj[0].correct);
+
   return (
     <>
       <div className="container">
