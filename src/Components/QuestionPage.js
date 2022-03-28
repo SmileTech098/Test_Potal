@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 const baseURL = "http://interviewapi.ngminds.com/getQuizData";
+// const baseURL = "https://dip-kaluse.github.io/examport/portal.json";
+
+let counter = JSON.parse(localStorage.getItem("COUNTER")) || 0;
+var len = 0;
 
 function QuestionPage() {
+  const navigate = useNavigate();
+
   const [Questions, setQuestions] = useState([]);
   const [Question, setQuestion] = useState("");
   const [QName, setQName] = useState("");
@@ -12,9 +19,10 @@ function QuestionPage() {
   const [CROption, setCROption] = useState(0);
   const [WrOption, setWrOption] = useState(0);
   const [correctOption, setcorrectOption] = useState(null);
-  const [count, setcount] = useState(0);
+  const [count, setcount] = useState(counter);
   const { id } = useParams();
 
+  let type = [];
   const axiosFun = () => {
     axios.get(baseURL).then((response) => {
       const dataLoc = response.data.tests.filter((ele) => ele._id === id);
@@ -24,33 +32,32 @@ function QuestionPage() {
       setQuestion(dataLoc[0].questions[count].questionText);
       setOption(dataLoc[0].questions[count].options);
       setcorrectOption(dataLoc[0].questions[count].correctOptionIndex);
-
-      //   console.log(dataLoc[0].questions[count].options);
+      len = dataLoc[0].questions.length;
     });
   };
-
+  const FunSelOption = (e, index) => {
+    // console.log("eee" + e);
+    type.push(index);
+    setSelOption(index);
+    console.log(SelOption);
+  };
   useEffect(() => {
     axiosFun();
-  }, []);
+  }, [count]);
 
   const Nexthandler = () => {
     setcount((prev) => prev + 1);
-    const indexop = Option.indexOf(SelOption);
-    console.log(typeof correctOption);
-    console.log(correctOption === indexop);
-    console.log(correctOption + "-------" + indexop);
-    console.log(SelOption);
-    console.log(Option);
-
-    correctOption === indexop
-      ? setCROption((prev) => prev + 1)
-      : setWrOption((prev) => prev + 1);
-
-    if (count === 5) {
-      if (window.confirm("Do you want to submit test")) Submit();
-      return;
+    const indexop = SelOption;
+    localStorage.setItem("COUNTER", JSON.stringify(count));
+    if (indexop !== -1) {
+      correctOption === indexop
+        ? setCROption((prev) => prev + 1)
+        : setWrOption((prev) => prev + 1);
     }
-    axiosFun();
+
+    if (count === len - 1) {
+      if (window.confirm("Do you want to submit test")) Submit();
+    }
   };
 
   const Submit = () => {
@@ -60,16 +67,18 @@ function QuestionPage() {
         Total: WrOption + CROption,
         Wrong: WrOption,
         Correct: CROption,
+        QName: QName,
       },
     ];
+    localStorage.setItem("COUNTER", JSON.stringify(0));
     localStorage.setItem("Right", JSON.stringify(obj));
 
     console.log("correct  " + CROption);
     console.log("wrong  " + WrOption);
+    navigate("/finish", { state: obj });
   };
 
-  //   const handleChange = (value) => {};
-
+  console.log("..................." + type);
   return (
     <>
       <div className="container">
@@ -84,21 +93,31 @@ function QuestionPage() {
                 <form>
                   <label>{Question}</label>
 
-                  {Option.map((ele, index) => (
-                    <div className="radio" key={index}>
-                      <label>
-                        <h5>
-                          <input
-                            type="radio"
-                            name={`option`}
-                            value={ele}
-                            onChange={(e) => setSelOption(e.target.value)}
-                          />
-                          {ele}
-                        </h5>
-                      </label>
-                    </div>
-                  ))}
+                  {Option.map((ele, index) => {
+                    let checkedbox = "radio";
+                    Questions[count].type === "Multiple-Response"
+                      ? (checkedbox = "checkbox")
+                      : (checkedbox = "radio");
+
+                    return (
+                      <div className="radio" key={ele}>
+                        <label>
+                          <h5>
+                            <input
+                              type={checkedbox}
+                              name={`option`}
+                              id={ele}
+                              value={ele}
+                              onChange={(e) =>
+                                FunSelOption(e.target.value, index)
+                              }
+                            />
+                            {ele}
+                          </h5>
+                        </label>
+                      </div>
+                    );
+                  })}
                 </form>
               </div>
 
@@ -106,14 +125,11 @@ function QuestionPage() {
                 <button onClick={Nexthandler} className="btn btn-success">
                   Next
                 </button>
-                <Link to="/finish">
-                  <button
-                    onClick={Submit}
-                    className="pull-right btn btn-danger"
-                  >
-                    Finish
-                  </button>
-                </Link>
+                {/* <Link to="/finish"> */}
+                <button onClick={Submit} className="pull-right btn btn-danger">
+                  Finish
+                </button>
+                {/* </Link> */}
               </div>
             </div>
           </div>
