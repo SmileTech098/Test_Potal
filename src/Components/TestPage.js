@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
-const baseURL = "http://interviewapi.ngminds.com/getQuizData";
-// const baseURL = "https://dip-kaluse.github.io/examport/portal.json";
+// const baseURL = "http://interviewapi.ngminds.com/getQuizData";
+const baseURL = "https://dip-kaluse.github.io/examport/portal.json";
 function TestPage() {
   const [Test, setTest] = useState([]);
 
@@ -12,15 +12,13 @@ function TestPage() {
       response.status === 200
         ? setTest(response.data.tests)
         : console.log("data not found");
-      // console.log(response.data.tests[0].name);
-      // console.log(response.data.tests[0].questions.length);
     });
   };
 
   useEffect(() => {
     axiosFun();
   }, [Test]);
-
+  localStorage.setItem("COUNTER", JSON.stringify(0));
   return (
     <>
       <div className="container">
@@ -53,10 +51,6 @@ function TestPage() {
             </table>
           </div>
         </div>
-        {/* API Url:{" "}
-        <a href="http://interviewapi.stagging.in/getQuizData" target="_blank">
-          http://interviewapi.stagging.in/getQuizData
-        </a> */}
       </div>
     </>
   );
