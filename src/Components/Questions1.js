@@ -3,108 +3,125 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
-// const baseURL = "http://interviewapi.ngminds.com/getQuizData"; 
 const baseURL ="https://dip-kaluse.github.io/examport/portal.json"
 let  dataLoc='';
+let ResArr=[];
 let  corrInd=[];
 let  corrRes=[];
-const Arrr=JSON.parse(localStorage.getItem("COUNTER"));
-console.log(Arrr[0])
-// let Arr=[count,right,wrong]
 let len
-let right=Arrr[1]||0;
-let wrong=Arrr[2]||0;
-
-const checkRes=(e)=>{
-e.target.checked=true
-}
+let right=0;
+let wrong=0;
 
 function Questions1() {
   const navigate = useNavigate();
-  const [count, setcount] = useState(Arrr[0]||0);
+  const { id } = useParams();
+  // let id = "598e9256cc88456d444e7c0d";
+  const Arrr=JSON.parse(localStorage.getItem(id))||0;
   const [Questions, setQuestions] = useState([]);
   const [QName,setQName]=useState(null)
   const [ID,setID]=useState(null)
   const [Correct,setCorrect]=useState(null)
-  const [Res,setRes]=useState(null)
+  const [count, setcount] = useState(Arrr);
+  
+  localStorage.setItem(id,JSON.stringify(count));
 
 
-  const { id } = useParams();
-  // const id = "598e9256cc88456d444e7c0d";
 
   let indData
+
+  
+
+  const checkRes=(ind)=>{
+  console.log("-------------------------"+ind);
+  console.log(JSON.stringify(dataLoc[0].questions[count].correctOptionIndex)===JSON.stringify(ind))
+  if(JSON.stringify(dataLoc[0].questions[count].correctOptionIndex)===JSON.stringify(ind))
+  right++;
+  else if(ind==="")
+  return;
+  else
+  wrong++;
+
+  console.log(wrong+"----"+right)
+  
+  }
 
 const SelOption=(e,checkedValue)=>{
    indData=parseInt(e.target.value);
 
+ResArr=JSON.parse(localStorage.getItem("RES"))||[];
+
 if(checkedValue==="radio")
 {
-  if(dataLoc[0].questions[count].correctOptionIndex===indData)
-  {
-    setCorrect(true)
-    console.log("right")
-    corrRes.push(indData);
-  }
-  else 
-  {
-    setCorrect(false)
-  }
+  ResArr[count]=indData
+  // if(dataLoc[0].questions[count].correctOptionIndex===indData)
+  // {
+  //   setCorrect(true)
+  //   console.log("right")
+  //   corrRes.push(indData);
+  // }
+  // else 
+  // {
+  //   setCorrect(false)
+  // }
 
 }
 else
   {
      e.target.checked?corrInd.push(indData):corrInd.pop()
-   
-     JSON.stringify(dataLoc[0].questions[count].correctOptionIndex)===JSON.stringify(corrInd)?corrRes.push(corrInd):console.log("jj")
-    
-    (JSON.stringify(dataLoc[0].questions[count].correctOptionIndex)===JSON.stringify(corrInd))
-   ?
-      setCorrect(true) 
-      :setCorrect(false)
+     ResArr[count]=corrInd
+     indData=corrInd;
+
+  //    JSON.stringify(dataLoc[0].questions[count].correctOptionIndex)===JSON.stringify(corrInd)?corrRes.push(corrInd):console.log(null);
+  //   (JSON.stringify(dataLoc[0].questions[count].correctOptionIndex)===JSON.stringify(corrInd))
+  //  ?
+  //     setCorrect(true) 
+  //     :setCorrect(false)
   }
-  console.log(Correct)
+localStorage.setItem("RES",JSON.stringify(ResArr))
+  checkRes(indData); 
 }
 
-console.log(corrRes)
+
 
 
   const Nexthandler = () => {
-    setcount((prev)=>prev+1)
-if(Correct)
-{
-  right++;
-}
-else if(!Correct)
-{
-  wrong++;
-}
-    console.log(Correct)
-    let Arr=[count,right,wrong]
-    localStorage.setItem("COUNTER", JSON.stringify(Arr));
+    if(count<len-1) setcount((prev)=>prev+1)
 
+if (count === len - 1) 
+ { if (window.confirm("Do you want to submit test")) Submit();}
 
-    if (count === len - 1) {
-      if (window.confirm("Do you want to submit test")) Submit();
-    }
 
   };
+
+ const  Prevhandler = () => {
+  if(count>0)
+  { setcount((prev)=>prev-1)}
+   
+     };
 
 
   const Submit = () => {
     console.log(right+"...."+wrong)
-    console.log("submit...")
     const obj = [
       {
-        Total: right + wrong,
+        Total: len,
         Wrong: wrong,
         Correct: right,
         QName: QName,
       },
     ];
-    localStorage.setItem("COUNTER", JSON.stringify(0));
-    localStorage.setItem("Right", JSON.stringify(obj))
+     console.log(obj[0])
+    localStorage.setItem("RES",JSON.stringify([]))
+    localStorage.setItem(id,JSON.stringify(0));
     navigate("/finish", { state: obj });
   };
+
+ const checkHandle=(index)=>{
+  const ch =JSON.parse(localStorage.getItem("RES"))||[]
+   if(index===ch[count] && index!=null )
+   return true 
+ }
+
   useEffect(() => {
     axios.get(baseURL).then((response) => {
        dataLoc = response.data.tests.filter((ele) => ele._id === id);
@@ -150,6 +167,7 @@ return () => {
                               type={checked}
                               name={`option`}
                               value={index} 
+                              checked={checkHandle(index)}
                               onChange={(e) => SelOption(e,checked)}  
                             />{"   "}
                             {ele}
@@ -165,9 +183,17 @@ return () => {
                 
               }
                 <div className="panel-footer">
+                <button onClick={Prevhandler} className="btn btn-success mx-3">
+                    prev
+                  </button>
+
+
+
                   <button onClick={Nexthandler} className="btn btn-success">
                     Next
                   </button>
+
+
                   {/* <Link to="/finish"> */}
                   <button onClick={Submit} className="pull-right btn btn-danger">
                     Finish
