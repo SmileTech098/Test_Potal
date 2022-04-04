@@ -9,8 +9,7 @@ let ResArr=[];
 let  corrInd=[];
 let  corrRes=[];
 let len
-let right=0;
-let wrong=0;
+
 
 function Questions1() {
   const navigate = useNavigate();
@@ -22,33 +21,17 @@ function Questions1() {
   const [ID,setID]=useState(null)
   const [Correct,setCorrect]=useState(null)
   const [count, setcount] = useState(Arrr);
-  
   localStorage.setItem(id,JSON.stringify(count));
-
-
-
   let indData
-
-  
 
   const checkRes=(ind)=>{
   console.log("-------------------------"+ind);
-  console.log(JSON.stringify(dataLoc[0].questions[count].correctOptionIndex)===JSON.stringify(ind))
-  if(JSON.stringify(dataLoc[0].questions[count].correctOptionIndex)===JSON.stringify(ind))
-  right++;
-  else if(ind==="")
-  return;
-  else
-  wrong++;
-
-  console.log(wrong+"----"+right)
-  
   }
 
 const SelOption=(e,checkedValue)=>{
    indData=parseInt(e.target.value);
 
-ResArr=JSON.parse(localStorage.getItem("RES"))||[];
+ResArr=JSON.parse(localStorage.getItem(`RES${id}`))||[];
 
 if(checkedValue==="radio")
 {
@@ -59,31 +42,22 @@ if(checkedValue==="radio")
   //   console.log("right")
   //   corrRes.push(indData);
   // }
-  // else 
-  // {
-  //   setCorrect(false)
-  // }
-
 }
 else
   {
      e.target.checked?corrInd.push(indData):corrInd.pop()
      ResArr[count]=corrInd
      indData=corrInd;
-
   //    JSON.stringify(dataLoc[0].questions[count].correctOptionIndex)===JSON.stringify(corrInd)?corrRes.push(corrInd):console.log(null);
   //   (JSON.stringify(dataLoc[0].questions[count].correctOptionIndex)===JSON.stringify(corrInd))
   //  ?
   //     setCorrect(true) 
   //     :setCorrect(false)
   }
-localStorage.setItem("RES",JSON.stringify(ResArr))
+  console.log(ResArr)
+  localStorage.setItem(`RES${id}`,JSON.stringify(ResArr))
   checkRes(indData); 
 }
-
-
-
-
   const Nexthandler = () => {
     if(count<len-1) setcount((prev)=>prev+1)
 
@@ -98,9 +72,28 @@ if (count === len - 1)
   { setcount((prev)=>prev-1)}
    
      };
-
-
   const Submit = () => {
+    let right=0;
+    let wrong=0;
+    const resanwser=JSON.parse(localStorage.getItem(`RES${id}`))||[];
+        resanwser.map((ele,index)=>{
+          console.log(JSON.stringify(dataLoc[0].questions[index].correctOptionIndex)+"==="+JSON.stringify(ele))
+          // console.log(JSON.stringify(ele)==null)
+        
+          if(JSON.stringify(dataLoc[0].questions[index].correctOptionIndex)===JSON.stringify(ele)||dataLoc[0].questions[index].correctOptionIndex===ele)
+          {
+            right++;
+          console.log("first"+ele)
+          }
+          else if(ele==null)
+          {
+            console.log(null)
+          }
+          else
+          wrong++
+         }
+        )
+
     console.log(right+"...."+wrong)
     const obj = [
       {
@@ -110,14 +103,16 @@ if (count === len - 1)
         QName: QName,
       },
     ];
-     console.log(obj[0])
-    localStorage.setItem("RES",JSON.stringify([]))
-    localStorage.setItem(id,JSON.stringify(0));
-    navigate("/finish", { state: obj });
+
+      console.log(obj[0])
+      localStorage.setItem(`RES${id}`,JSON.stringify([]))
+      localStorage.setItem(id,JSON.stringify(0));
+      navigate("/finish", { state: obj });
   };
 
+
  const checkHandle=(index)=>{
-  const ch =JSON.parse(localStorage.getItem("RES"))||[]
+  const ch =JSON.parse(localStorage.getItem(`RES${id}`))||[]
    if(index===ch[count] && index!=null )
    return true 
  }
