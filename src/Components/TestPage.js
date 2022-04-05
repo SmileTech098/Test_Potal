@@ -18,7 +18,7 @@ function TestPage() {
   useEffect(() => {
     axiosFun();
   }, [Test]);
-  localStorage.setItem("COUNTER", JSON.stringify(0));
+  // localStorage.setItem("COUNTER", JSON.stringify(0));
   return (
     <>
       <div className="container">
